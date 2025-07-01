@@ -6,7 +6,7 @@
     <title>Assistente Linguistico</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
         
@@ -57,121 +57,193 @@
         </div>
 
         <div id="explainSection" class="hidden">
-             <p>Funzionalità "Chiedi al Tutor" in costruzione.</p>
+             <p class="text-center text-gray-500">Funzionalità "Chiedi al Tutor" in costruzione.</p>
         </div>
 
         <div id="responseArea" class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200 hidden">
-            <h3 class="font-bold text-lg mb-2">Risposta dell'Assistente:</h3>
-            <p id="llmResponseContent" class="text-gray-800 whitespace-pre-wrap"></p>
-        </div>
-        
-        <div id="loading" class="mt-6 text-center hidden">
-            <p>Sto pensando...</p>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-lg">Risposta dell'Assistente:</h3>
+                <button id="audioBtn" title="Ascolta la pronuncia" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m11.314 0a5 5 0 00-8.486 0M12 6v12"></path></svg>
+                </button>
+            </div>
+            <div id="llmResponseContent" class="text-gray-800 whitespace-pre-wrap"></div>
         </div>
         
         <div id="errorDisplay" class="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md hidden">
             <p id="errorMessage"></p>
         </div>
+        <div id="ttsErrorDisplay" class="mt-2 p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md hidden">
+            <p id="ttsErrorMessage"></p>
+        </div>
 
     </div>
 
 <script>
-// ========================================================================
-//  CODICE FINALE, UNICO E FUNZIONANTE
-// ========================================================================
-
-// --- ELEMENTI DEL DOM ---
-const translateBtn = document.getElementById('translateBtn');
-const explainBtn = document.getElementById('explainBtn');
-const translateSection = document.getElementById('translateSection');
-const explainSection = document.getElementById('explainSection');
-const phraseInput = document.getElementById('phraseInput');
-const sourceLangSelect = document.getElementById('sourceLangSelect');
-const targetLangSelect = document.getElementById('targetLangSelect');
-const submitTranslateBtn = document.getElementById('submitTranslateBtn');
-const responseArea = document.getElementById('responseArea');
-const llmResponseContent = document.getElementById('llmResponseContent');
-const errorDisplay = document.getElementById('errorDisplay');
-const errorMessage = document.getElementById('errorMessage');
-
-// --- GESTIONE INTERFACCIA ---
-function setLoadingState(isLoading, button) {
-    const originalText = button.dataset.originalText || button.innerHTML;
-    if (!button.dataset.originalText) {
-        button.dataset.originalText = originalText;
-    }
-
-    if (isLoading) {
-        button.disabled = true;
-        button.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Elaborazione...</span>`;
-    } else {
-        button.disabled = false;
-        button.innerHTML = originalText;
-    }
-}
-
-function displayError(msg) {
-    errorMessage.textContent = msg;
-    errorDisplay.classList.remove('hidden');
-    responseArea.classList.add('hidden');
-}
-
-function hideError() {
-    errorDisplay.classList.add('hidden');
-}
-
-// --- FUNZIONE SICURA PER CHIAMARE L'API TRAMITE NETLIFY ---
-async function interrogaAssistente(testoDomanda) {
-    try {
-        const response = await fetch('/.netlify/functions/chiamata-gemini', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: testoDomanda })
-        });
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'La richiesta al server è fallita con stato ' + response.status }));
-            throw new Error(errorData.error || 'Errore generico del server.');
-        }
-        const data = await response.json();
-        return data.text;
-    } catch (error) {
-        console.error("Errore nella chiamata sicura:", error);
-        return `ERRORE: Impossibile comunicare con l'assistente. Dettagli: ${error.message}`;
-    }
-}
-
-// --- FUNZIONE PRINCIPALE CHE PARTE AL CLICK ---
-async function eseguiTraduzione() {
-    hideError();
-    const fraseDaTradurre = phraseInput.value;
-    const linguaPartenza = sourceLangSelect.value;
-    const linguaDestinazione = targetLangSelect.value;
-
-    if (!fraseDaTradurre) {
-        displayError("Per favore, inserisci una frase da tradurre.");
-        return;
-    }
-
-    setLoadingState(true, submitTranslateBtn);
-    responseArea.classList.add('hidden');
-
-    const promptCompleto = `Traduci questa frase: "${fraseDaTradurre}" da ${linguaPartenza} a ${linguaDestinazione}. Fornisci solo ed esclusivamente la traduzione diretta del testo, senza aggiungere commenti, spiegazioni o frasi introduttive come "Ecco la traduzione:".`;
-    
-    const risposta = await interrogaAssistente(promptCompleto);
-
-    setLoadingState(false, submitTranslateBtn);
-
-    if (risposta.startsWith("ERRORE:")) {
-        displayError(risposta);
-    } else {
-        llmResponseContent.innerText = risposta;
-        responseArea.classList.remove('hidden');
-    }
-}
-
-// --- COLLEGAMENTO DEGLI EVENTI ---
 document.addEventListener('DOMContentLoaded', () => {
+    // --- ELEMENTI DEL DOM ---
+    const translateBtn = document.getElementById('translateBtn');
+    const explainBtn = document.getElementById('explainBtn');
+    const translateSection = document.getElementById('translateSection');
+    const explainSection = document.getElementById('explainSection');
+    const phraseInput = document.getElementById('phraseInput');
+    const sourceLangSelect = document.getElementById('sourceLangSelect');
+    const targetLangSelect = document.getElementById('targetLangSelect');
+    const submitTranslateBtn = document.getElementById('submitTranslateBtn');
+    const responseArea = document.getElementById('responseArea');
+    const llmResponseContent = document.getElementById('llmResponseContent');
+    const errorDisplay = document.getElementById('errorDisplay');
+    const errorMessage = document.getElementById('errorMessage');
+    const ttsErrorDisplay = document.getElementById('ttsErrorDisplay');
+    const ttsErrorMessageSpan = document.getElementById('ttsErrorMessage');
+    const audioBtn = document.getElementById('audioBtn');
+
+    let availableVoices = [];
+
+    // --- GESTIONE INTERFACCIA ---
+    function setLoadingState(isLoading, button) {
+        const originalText = button.dataset.originalText || button.innerHTML;
+        if (!button.dataset.originalText) button.dataset.originalText = originalText;
+
+        if (isLoading) {
+            button.disabled = true;
+            button.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Elaborazione...</span>`;
+        } else {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    function displayError(msg) {
+        errorMessage.textContent = msg;
+        errorDisplay.classList.remove('hidden');
+        responseArea.classList.add('hidden');
+    }
+
+    function hideError() {
+        errorDisplay.classList.add('hidden');
+    }
+
+    function displayTtsError(msg) {
+        ttsErrorMessageSpan.textContent = msg;
+        ttsErrorDisplay.classList.remove('hidden');
+    }
+
+    function hideTtsError() {
+        ttsErrorDisplay.classList.add('hidden');
+    }
+    
+    function parseMarkdown(text) {
+        let html = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n- (.*?)/g, '<li>$1</li>');
+        
+        html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+        html = html.replace(/<\/li><li>/g, '</li><li>');
+        return html.replace(/\n/g, '<br>');
+    }
+
+    // --- FUNZIONALITÀ TEXT-TO-SPEECH (TTS) ---
+    function loadVoices() {
+        availableVoices = window.speechSynthesis.getVoices();
+    }
+
+    if ('speechSynthesis' in window) {
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+    }
+
+    function speakPhrase(text, lang) {
+        hideTtsError();
+        if (!('speechSynthesis' in window) || availableVoices.length === 0) {
+            displayTtsError('La sintesi vocale non è disponibile nel tuo browser.');
+            return;
+        }
+        if (!text || text.trim() === '') return;
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const langMap = { 'Inglese': 'en-US', 'Francese': 'fr-FR', 'Spagnolo': 'es-ES', 'Tedesco': 'de-DE', 'Ebraico': 'he-IL', 'Italiano': 'it-IT' };
+        const langCode = langMap[lang] || 'en-US';
+        utterance.lang = langCode;
+
+        const voice = availableVoices.find(v => v.lang === langCode);
+        if (voice) utterance.voice = voice;
+        else displayTtsError(`Nessuna voce trovata per ${lang}. Verrà usata la voce di default.`);
+        
+        utterance.onerror = (event) => displayTtsError(`Errore TTS: ${event.error}`);
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // --- FUNZIONE SICURA PER CHIAMARE L'API TRAMITE NETLIFY ---
+    async function interrogaAssistente(testoDomanda) {
+        try {
+            const response = await fetch('/.netlify/functions/chiamata-gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: testoDomanda })
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'La richiesta al server è fallita con stato ' + response.status }));
+                throw new Error(errorData.error || 'Errore generico del server.');
+            }
+            const data = await response.json();
+            return data.text;
+        } catch (error) {
+            console.error("Errore nella chiamata sicura:", error);
+            return `ERRORE: Impossibile comunicare con l'assistente. Dettagli: ${error.message}`;
+        }
+    }
+
+    // --- FUNZIONE PRINCIPALE CHE PARTE AL CLICK ---
+    async function eseguiTraduzione() {
+        hideError();
+        hideTtsError();
+        const fraseDaTradurre = phraseInput.value;
+        const linguaPartenza = sourceLangSelect.value;
+        const linguaDestinazione = targetLangSelect.value;
+
+        if (!fraseDaTradurre) {
+            displayError("Per favore, inserisci una frase da tradurre.");
+            return;
+        }
+
+        setLoadingState(true, submitTranslateBtn);
+        responseArea.classList.add('hidden');
+
+        const promptCompleto = `Traduci questa frase: "${fraseDaTradurre}" da ${linguaPartenza} a ${linguaDestinazione}. Fornisci una traduzione principale e, se applicabile, 2-3 traduzioni alternative o contestuali. Formatta la risposta in questo modo, usando Markdown:
+**Traduzione Principale:** [Testo della traduzione principale]
+- [Alternativa 1]
+- [Alternativa 2]`;
+    
+        const risposta = await interrogaAssistente(promptCompleto);
+
+        setLoadingState(false, submitTranslateBtn);
+
+        if (risposta.startsWith("ERRORE:")) {
+            displayError(risposta);
+        } else {
+            llmResponseContent.innerHTML = parseMarkdown(risposta);
+            responseArea.classList.remove('hidden');
+        }
+    }
+
+    // --- COLLEGAMENTO DEGLI EVENTI ---
     submitTranslateBtn.addEventListener('click', eseguiTraduzione);
+    
+    audioBtn.addEventListener('click', () => {
+        const mainTranslationNode = llmResponseContent.querySelector('strong');
+        let textToSpeak = llmResponseContent.innerText; 
+        
+        if (mainTranslationNode && mainTranslationNode.nextSibling) {
+            textToSpeak = mainTranslationNode.nextSibling.textContent.trim().split('\n')[0];
+        }
+        
+        const targetLang = targetLangSelect.value;
+        speakPhrase(textToSpeak, targetLang);
+    });
 
     translateBtn.addEventListener('click', () => {
         translateSection.classList.remove('hidden');
