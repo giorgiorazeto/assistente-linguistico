@@ -300,177 +300,77 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- CHIAMATA AL MODELLO LINGUISTICO (LLM) ---
-        async function callLlm(prompt, type) {
-            hideError();
-            hideTtsError();
-            responseArea.classList.add('hidden');
-            setLoadingState(true);
+       // ========================================================================
+//  NUOVO CODICE JAVASCRIPT COMPLETO E SICURO (Versione Definitiva)
+// ========================================================================
 
-            try {
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                const apiKey = "AIzaSyBTKNBFIkvtKlgIJxZXarjjJJCyQ-TsIQI"; // Fornita da Canvas al runtime
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+document.addEventListener('DOMContentLoaded', () => {
+    // --- COLLEGAMENTO AGLI ELEMENTI HTML ---
+    // Questi devono corrispondere agli 'id' nel suo file HTML
+    const promptInput = document.getElementById('prompt-input');
+    const submitButton = document.getElementById('submit-button');
+    const responseArea = document.getElementById('response-area');
+    const loadingIndicator = document.getElementById('loading');
+    const errorDisplay = document.getElementById('error-message');
 
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 20000); // Timeout di 20 secondi
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    const errorBody = await response.text();
-                    throw new Error(`Errore HTTP: ${response.status} - ${errorBody}`);
-                }
-
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    handleLlmResponse(text, type);
-                } else {
-                    throw new Error('Formato della risposta del modello non valido.');
-                }
-
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    displayError('La richiesta è scaduta. Il modello ha impiegato troppo tempo per rispondere.');
-                } else {
-                    displayError(`Si è verificato un errore: ${err.message}`);
-                }
-                console.error('Errore durante la chiamata LLM:', err);
-            } finally {
-                setLoadingState(false);
+    // --- FUNZIONE SICURA PER CHIAMARE L'API TRAMITE NETLIFY ---
+    async function interrogaAssistente(testoDomanda) {
+        try {
+            const response = await fetch('/.netlify/functions/chiamata-gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: testoDomanda })
+            });
+            if (!response.ok) {
+                throw new Error('La richiesta al server è fallita.');
             }
+            const data = await response.json();
+            return data.text;
+        } catch (error) {
+            console.error("Errore nella chiamata sicura:", error);
+            return "ERRORE: Impossibile comunicare con l'assistente. Riprova.";
+        }
+    }
+
+    // --- FUNZIONE PRINCIPALE CHE GESTISCE L'INVIO ---
+    async function eseguiDomanda() {
+        const domandaUtente = promptInput.value;
+
+        if (!domandaUtente) {
+            errorDisplay.innerText = "Per favore, inserisci una domanda.";
+            errorDisplay.style.display = 'block';
+            return;
         }
 
-        // --- GESTIONE DELLA RISPOSTA DEL LLM ---
-        function handleLlmResponse(text, type) {
-             if (type === 'explain') {
-                llmResponseContent.innerHTML = parseMarkdown(text);
-             } else if (type === 'translate') {
-                // Estrae le varie parti della risposta con espressioni regolari più flessibili
-                const translatedPhraseMatch = text.match(/\*\*Traduzione\*\*.*?:.*?"(.*?)"/);
-                const phoneticMatch = text.match(/\*\*Guida alla Pronuncia\*\*.*?\*Trascrizione Fonetica Semplificata:\* (.*?)(?:\*\*|<br\/>)/s);
-                const equivalentsMatch = text.match(/\*\*Traduzioni Equivalenti:\*\*(.*)/s);
+        // 1. Prepara l'interfaccia per l'attesa
+        errorDisplay.style.display = 'none';
+        submitButton.disabled = true;
+        loadingIndicator.style.display = 'block';
+        responseArea.style.display = 'none';
 
-                const translatedPhrase = translatedPhraseMatch ? translatedPhraseMatch[1] : 'N/A';
-                
-                let responseHtml = `
-                    ${parseMarkdown(text.split('**Traduzioni Equivalenti:**')[0])}
-                    <button id="speakAudioBtn" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition duration-300 shadow-md flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9l1.414 1.414M12 18.75a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008c0-.414.336-.75.75-.75h.008zM8.25 15a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H8.25a.75.75 0 01-.75-.75v-.008c0-.414.336-.75.75-.75h.008zM15.75 15a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008c0-.414.336-.75.75-.75h.008z"/>
-                        </svg>
-                        Ascolta la traduzione
-                    </button>
-                `;
+        // 2. Chiama la nostra funzione sicura e aspetta la risposta
+        const risposta = await interrogaAssistente(domandaUtente);
 
-                if (equivalentsMatch && equivalentsMatch[1]) {
-                    responseHtml += `<br/><br/>${parseMarkdown('**Traduzioni Equivalenti:**' + equivalentsMatch[1])}`;
-                }
+        // 3. Mostra la risposta e ripristina l'interfaccia
+        loadingIndicator.style.display = 'none';
+        submitButton.disabled = false;
 
-                llmResponseContent.innerHTML = responseHtml;
-                
-                const currentTargetLang = targetLangSelect.value;
-                const speakAudioBtn = document.getElementById('speakAudioBtn');
-                if (speakAudioBtn) {
-                   speakAudioBtn.onclick = () => speakPhrase(translatedPhrase, currentTargetLang);
-                }
-             }
-             responseArea.classList.remove('hidden');
+        if (risposta.startsWith("ERRORE:")) {
+            errorDisplay.innerText = risposta;
+            errorDisplay.style.display = 'block';
+        } else {
+            responseArea.innerText = risposta;
+            responseArea.style.display = 'block';
         }
+    }
 
-
-        // --- EVENT LISTENERS ---
-
-        // Gestione del cambio tab
-        function switchTab(activeBtn, inactiveBtn, activeSection, inactiveSection) {
-            activeSection.classList.remove('hidden');
-            inactiveSection.classList.add('hidden');
-            
-            activeBtn.classList.add('bg-indigo-500', 'text-white', 'shadow-md');
-            activeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-            
-            inactiveBtn.classList.remove('bg-indigo-500', 'text-white', 'shadow-md');
-            inactiveBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-            
-            hideError();
-            hideTtsError();
-            responseArea.classList.add('hidden');
+    // --- COLLEGAMENTO DELLA FUNZIONE AL PULSANTE E AL TASTO INVIO ---
+    submitButton.addEventListener('click', eseguiDomanda);
+    promptInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            eseguiDomanda();
         }
-
-        translateBtn.addEventListener('click', () => switchTab(translateBtn, explainBtn, translateSection, explainSection));
-        explainBtn.addEventListener('click', () => switchTab(explainBtn, translateBtn, explainSection, translateSection));
-
-        // Gestione dei bottoni di invio
-        submitTranslateBtn.addEventListener('click', () => {
-            const phrase = phraseInput.value;
-            const sourceLang = sourceLangSelect.value;
-            const targetLang = targetLangSelect.value;
-
-            if (!phrase.trim()) {
-                displayError('Per favore, inserisci la frase da tradurre.');
-                return;
-            }
-
-            const llmPrompt = `
-                Sei un "Tutor Poliglotta Esperto". La tua specializzazione copre Italiano, Inglese, Francese, Spagnolo, Tedesco e Ebraico.
-                Traduci la frase fornita e dai una guida alla pronuncia chiara.
-
-                **Frase:** "${phrase}"
-                **Lingua di Partenza:** "${sourceLang}"
-                **Lingua di Destinazione:** "${targetLang}"
-
-                **FORMATO DI OUTPUT OBBLIGATORIO (USA QUESTO ESATTO MODELLO):**
-                **Frase Originale** (${sourceLang}): "${phrase}"
-                **Traduzione** (${targetLang}): "[Frase tradotta]"
-                **Guida alla Pronuncia** (${targetLang}):
-                *Trascrizione Fonetica Semplificata:* [Trascrizione fonetica semplificata e intuitiva. Esempio per l'Ebraico: Sha-LOM, Ma Nish-MA. NON usare caratteri speciali come \` o \*\* qui.]
-                **Traduzioni Equivalenti:** [Fornisci un elenco di traduzioni alternative separate da punto e virgola. Per OGNI traduzione, includi OBBLIGATORIAMENTE la pronuncia semplificata tra parentesi. Formato: Traduzione 1 (Pronuncia 1); Traduzione 2 (Pronuncia 2). Se non ci sono equivalenti, ometti completamente questa riga.]
-
-                Sii conciso e attieniti strettamente al formato. Non aggiungere introduzioni, conclusioni o note extra.
-            `;
-            callLlm(llmPrompt, 'translate');
-        });
-
-        submitExplainBtn.addEventListener('click', () => {
-            const specificRequest = specificRequestInput.value;
-            const sourceLang = explainSourceLangSelect.value;
-            const targetLang = explainTargetLangSelect.value;
-
-            if (!specificRequest.trim()) {
-                displayError('Per favore, specifica l\'argomento della spiegazione.');
-                return;
-            }
-
-            const llmPrompt = `
-                Sei un "Tutor Poliglotta Esperto". La tua specializzazione copre Italiano, Inglese, Francese, Spagnolo, Tedesco e Ebraico.
-                Fornisci una spiegazione chiara e adatta a un principiante per l'argomento richiesto, usando esempi pratici.
-
-                **Argomento:** "${specificRequest}"
-                **Lingua di Destinazione (per la spiegazione):** "${targetLang}"
-                **Lingua di Partenza (per le traduzioni degli esempi):** "${sourceLang}"
-
-                **FORMATO DI OUTPUT OBBLIGATORIO:**
-                **Argomento Richiesto:** ${specificRequest} in ${targetLang}
-                **Spiegazione:**
-                [Descrizione chiara e semplice del concetto. Usa paragrafi brevi o elenchi puntati.]
-                **Esempi Pratici:**
-                - \`"[Esempio 1 in lingua di destinazione]"\` (Traduzione: "[Traduzione in lingua di partenza]")
-                - \`"[Esempio 2 in lingua di destinazione]"\` (Traduzione: "[Traduzione in lingua di partenza]")
-                - \`"[Esempio 3 in lingua di destinazione]"\` (Traduzione: "[Traduzione in lingua di partenza]")
-
-                Attieniti strettamente a questo formato.
-            `;
-            callLlm(llmPrompt, 'explain');
-        });
-    </script>
+    });
+});
 </body>
 </html>
