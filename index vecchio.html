@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente Linguistico</title>
+    <!-- Caricamento di Tailwind CSS dal CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Caricamento del font Inter da Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Stile per un aspetto più pulito quando il contenuto è dinamico */
+        .prose {
+            color: #374151; /* gray-700 */
+        }
+        .prose strong {
+            font-weight: 600; /* semibold */
+        }
+        .prose code {
+            background-color: #e5e7eb; /* gray-200 */
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 text-gray-800 flex flex-col items-center">
+
+    <div class="w-full max-w-3xl">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-blue-200">
+            <h1 class="text-3xl sm:text-4xl font-bold text-center text-blue-700 mb-4">
+                <span class="text-indigo-600">Assistente</span> Linguistico
+            </h1>
+            <p class="text-center text-gray-600 mb-8">
+                Il tuo Tutor Poliglotta per affiancare Duolingo!
+            </p>
+
+            <!-- Selettore del tipo di richiesta -->
+            <div class="flex justify-center mb-6 space-x-2 sm:space-x-4">
+                <button id="translateBtn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 bg-indigo-500 text-white shadow-md">
+                    Traduzione & Pronuncia
+                </button>
+                <button id="explainBtn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    Chiedi al Tutor
+                </button>
+            </div>
+
+            <!-- Sezione Traduzione -->
+            <div id="translateSection" class="space-y-6">
+                <div>
+                    <label for="phraseInput" class="block text-lg font-medium text-gray-700 mb-2">
+                        Inserisci la frase:
+                    </label>
+                    <input
+                        type="text"
+                        id="phraseInput"
+                        placeholder="Esempio: Ciao, come stai?"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
+                    />
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="sourceLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
+                            Lingua di Partenza:
+                        </label>
+                        <select
+                            id="sourceLangSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
+                        >
+                            <option value="Italiano">Italiano</option>
+                            <option value="Inglese">Inglese</option>
+                            <option value="Francese">Francese</option>
+                            <option value="Spagnolo">Spagnolo</option>
+                            <option value="Tedesco">Tedesco</option>
+                            <option value="Ebraico">Ebraico</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="targetLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
+                            Lingua di Destinazione:
+                        </label>
+                        <select
+                            id="targetLangSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
+                        >
+                            <option value="Inglese">Inglese</option>
+                            <option value="Francese">Francese</option>
+                            <option value="Spagnolo">Spagnolo</option>
+                            <option value="Tedesco">Tedesco</option>
+                            <option value="Ebraico">Ebraico</option>
+                            <option value="Italiano">Italiano</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="submitTranslateBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    Traduci e Pronuncia
+                </button>
+            </div>
+
+            <!-- Sezione Spiegazione -->
+            <div id="explainSection" class="space-y-6 hidden">
+                <div>
+                    <label for="specificRequestInput" class="block text-lg font-medium text-gray-700 mb-2">
+                        Argomento (es. "Usi del congiuntivo"):
+                    </label>
+                    <input
+                        type="text"
+                        id="specificRequestInput"
+                        placeholder="Esempio: Usi del 'futuro semplice' in inglese"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
+                    />
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="explainSourceLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
+                            La tua Lingua:
+                        </label>
+                        <select
+                            id="explainSourceLangSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
+                        >
+                            <option value="Italiano">Italiano</option>
+                            <option value="Inglese">Inglese</option>
+                            <option value="Francese">Francese</option>
+                            <option value="Spagnolo">Spagnolo</option>
+                            <option value="Tedesco">Tedesco</option>
+                            <option value="Ebraico">Ebraico</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="explainTargetLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
+                            Lingua dell'Argomento:
+                        </label>
+                        <select
+                            id="explainTargetLangSelect"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
+                        >
+                            <option value="Inglese">Inglese</option>
+                            <option value="Francese">Francese</option>
+                            <option value="Spagnolo">Spagnolo</option>
+                            <option value="Tedesco">Tedesco</option>
+                            <option value="Ebraico">Ebraico</option>
+                            <option value="Italiano">Italiano</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="submitExplainBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    Ottieni Spiegazione
+                </button>
+            </div>
+        </div>
+
+        <!-- Area di Errore e Risposta -->
+        <div id="errorDisplay" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative w-full mt-6 hidden" role="alert">
+            <strong class="font-bold">Errore!</strong>
+            <span id="errorMessage" class="block sm:inline ml-2"></span>
+        </div>
+
+        <div id="responseArea" class="bg-white p-6 rounded-xl shadow-lg w-full mt-6 border border-green-200 hidden">
+            <h2 class="text-2xl font-semibold text-green-700 mb-4">La tua risposta:</h2>
+            <div id="llmResponseContent" class="prose max-w-none"></div>
+            <div id="ttsErrorDisplay" class="mt-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative hidden" role="alert">
+                <strong class="font-bold">Attenzione:</strong>
+                <span id="ttsErrorMessage" class="block sm:inline ml-2"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ELEMENTI DEL DOM ---
+        const translateBtn = document.getElementById('translateBtn');
+        const explainBtn = document.getElementById('explainBtn');
+        const translateSection = document.getElementById('translateSection');
+        const explainSection = document.getElementById('explainSection');
+        const phraseInput = document.getElementById('phraseInput');
+        const sourceLangSelect = document.getElementById('sourceLangSelect');
+        const targetLangSelect = document.getElementById('targetLangSelect');
+        const submitTranslateBtn = document.getElementById('submitTranslateBtn');
+        const specificRequestInput = document.getElementById('specificRequestInput');
+        const explainSourceLangSelect = document.getElementById('explainSourceLangSelect');
+        const explainTargetLangSelect = document.getElementById('explainTargetLangSelect');
+        const submitExplainBtn = document.getElementById('submitExplainBtn');
+        const errorDisplay = document.getElementById('errorDisplay');
+        const errorMessage = document.getElementById('errorMessage');
+        const responseArea = document.getElementById('responseArea');
+        const llmResponseContent = document.getElementById('llmResponseContent');
+        const ttsErrorDisplay = document.getElementById('ttsErrorDisplay');
+        const ttsErrorMessageSpan = document.getElementById('ttsErrorMessage');
+
+        let availableVoices = [];
+  // --- FUNZIONI DI UTILITÀ ---
+
+        // Funzione per mostrare e nascondere il caricamento sui bottoni
+        function setLoadingState(isLoading) {
+            const loadingSpinner = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            
+            submitTranslateBtn.disabled = isLoading;
+            submitExplainBtn.disabled = isLoading;
+
+            if (isLoading) {
+                submitTranslateBtn.innerHTML = `${loadingSpinner} Traduco...`;
+                submitExplainBtn.innerHTML = `${loadingSpinner} Spiego...`;
+            } else {
+                submitTranslateBtn.innerHTML = 'Traduci e Pronuncia';
+                submitExplainBtn.innerHTML = 'Ottieni Spiegazione';
+            }
+        }
+        
+        // Funzione per interpretare una versione semplificata di Markdown in HTML
+        function parseMarkdown(markdown) {
+            let html = markdown
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')       
+                .replace(/`(.*?)`/g, '<code>$1</code>')     
+                .replace(/^- (.*)/gm, '<li>$1</li>')         
+                .replace(/(\n|^)(<li>.*<\/li>(\n|$))+/gs, '<ul>$&</ul>') 
+                .replace(/<\/li>\n<li>/g, '</li><li>')
+                .replace(/<ul>\n/g, '<ul>').replace(/\n<\/ul>/g, '</ul>')
+                .replace(/\n/g, '<br/>'); 
+            return html;
+        }
+
+        // Funzioni per gestire la visualizzazione degli errori
+        function displayError(msg) {
+            errorMessage.textContent = msg;
+            errorDisplay.classList.remove('hidden');
+            responseArea.classList.add('hidden');
+        }
+
+        function hideError() {
+            errorDisplay.classList.add('hidden');
+        }
+
+        function displayTtsError(msg) {
+            ttsErrorMessageSpan.textContent = msg;
+            ttsErrorDisplay.classList.remove('hidden');
+        }
+
+        function hideTtsError() {
+            ttsErrorDisplay.classList.add('hidden');
+        }
+
+        // --- FUNZIONALITÀ TEXT-TO-SPEECH (TTS) ---
+
+        // Carica le voci disponibili per la sintesi vocale
+        function loadVoices() {
+            availableVoices = window.speechSynthesis.getVoices();
+        }
+
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+        } else {
+            console.warn('Sintesi vocale non supportata da questo browser.');
+        }
+
+        // Riproduce una frase usando la sintesi vocale
+        function speakPhrase(text, lang) {
+            hideTtsError();
+            if (!('speechSynthesis'in window) || availableVoices.length === 0) {
+                displayTtsError('La sintesi vocale non è disponibile o configurata nel tuo browser.');
+                return;
+            }
+            if (!text || text.trim() === '') return;
+
+            window.speechSynthesis.cancel(); // Interrompe eventuali riproduzioni in corso
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const langMap = {
+                'Inglese': 'en-US', 'Francese': 'fr-FR', 'Spagnolo': 'es-ES',
+                'Tedesco': 'de-DE', 'Ebraico': 'he-IL', 'Italiano': 'it-IT'
+            };
+            const langCode = langMap[lang] || 'en-US';
+            utterance.lang = langCode;
+
+            const voice = availableVoices.find(v => v.lang === langCode);
+            if (voice) {
+                utterance.voice = voice;
+            } else {
+                displayTtsError(`Nessuna voce trovata per ${lang}. Verrà usata la voce di default.`);
+            }
+
+            utterance.onerror = (event) => displayTtsError(`Errore TTS: ${event.error}`);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- CHIAMATA AL MODELLO LINGUISTICO (LLM) ---
+        async function callLlm(prompt, type) {
+            hideError();
+            hideTtsError();
+            responseArea.classList.add('hidden');
+            setLoadingState(true);
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = "AIzaSyBTKNBFIkvtKlgIJxZXarjjJJCyQ-TsIQI"; // Fornita da Canvas al runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000); // Timeout di 20 secondi
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    throw new Error(`Errore HTTP: ${response.status} - ${errorBody}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    handleLlmResponse(text, type);
+                } else {
+                    throw new Error('Formato della risposta del modello non valido.');
+                }
+
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    displayError('La richiesta è scaduta. Il modello ha impiegato troppo tempo per rispondere.');
+                } else {
+                    displayError(`Si è verificato un errore: ${err.message}`);
+                }
+                console.error('Errore durante la chiamata LLM:', err);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        // --- GESTIONE DELLA RISPOSTA DEL LLM ---
+        function handleLlmResponse(text, type) {
+             if (type === 'explain') {
+                llmResponseContent.innerHTML = parseMarkdown(text);
+             } else if (type === 'translate') {
+                // Estrae le varie parti della risposta con espressioni regolari più flessibili
+                const translatedPhraseMatch = text.match(/\*\*Traduzione\*\*.*?:.*?"(.*?)"/);
+                const phoneticMatch = text.match(/\*\*Guida alla Pronuncia\*\*.*?\*Trascrizione Fonetica Semplificata:\* (.*?)(?:\*\*|<br\/>)/s);
+                const equivalentsMatch = text.match(/\*\*Traduzioni Equivalenti:\*\*(.*)/s);
+
+                const translatedPhrase = translatedPhraseMatch ? translatedPhraseMatch[1] : 'N/A';
+                
+                let responseHtml = `
+                    ${parseMarkdown(text.split('**Traduzioni Equivalenti:**')[0])}
+                    <button id="speakAudioBtn" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition duration-300 shadow-md flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9l1.414 1.414M12 18.75a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008c0-.414.336-.75.75-.75h.008zM8.25 15a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H8.25a.75.75 0 01-.75-.75v-.008c0-.414.336-.75.75-.75h.008zM15.75 15a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008c0-.414.336-.75.75-.75h.008z"/>
+                        </svg>
+                        Ascolta la traduzione
+                    </button>
+                `;
+
+                if (equivalentsMatch && equivalentsMatch[1]) {
+                    responseHtml += `<br/><br/>${parseMarkdown('**Traduzioni Equivalenti:**' + equivalentsMatch[1])}`;
+                }
+
+                llmResponseContent.innerHTML = responseHtml;
+                
+                const currentTargetLang = targetLangSelect.value;
+                const speakAudioBtn = document.getElementById('speakAudioBtn');
+                if (speakAudioBtn) {
+                   speakAudioBtn.onclick = () => speakPhrase(translatedPhrase, currentTargetLang);
+                }
+             }
+             responseArea.classList.remove('hidden');
+        }
+
+
+        // --- EVENT LISTENERS ---
+
+        // Gestione del cambio tab
+        function switchTab(activeBtn, inactiveBtn, activeSection, inactiveSection) {
+            activeSection.classList.remove('hidden');
+            inactiveSection.classList.add('hidden');
+            
+            activeBtn.classList.add('bg-indigo-500', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            
+            inactiveBtn.classList.remove('bg-indigo-500', 'text-white', 'shadow-md');
+            inactiveBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            
+            hideError();
+            hideTtsError();
+            responseArea.classList.add('hidden');
+        }
+
+        translateBtn.addEventListener('click', () => switchTab(translateBtn, explainBtn, translateSection, explainSection));
+        explainBtn.addEventListener('click', () => switchTab(explainBtn, translateBtn, explainSection, translateSection));
+
+        // Gestione dei bottoni di invio
+        submitTranslateBtn.addEventListener('click', () => {
+            const phrase = phraseInput.value;
+            const sourceLang = sourceLangSelect.value;
+            const targetLang = targetLangSelect.value;
+
+            if (!phrase.trim()) {
+                displayError('Per favore, inserisci la frase da tradurre.');
+                return;
+            }
+
+            const llmPrompt = `
+                Sei un "Tutor Poliglotta Esperto". La tua specializzazione copre Italiano, Inglese, Francese, Spagnolo, Tedesco e Ebraico.
+                Traduci la frase fornita e dai una guida alla pronuncia chiara.
+
+                **Frase:** "${phrase}"
+                **Lingua di Partenza:** "${sourceLang}"
+                **Lingua di Destinazione:** "${targetLang}"
+
+                **FORMATO DI OUTPUT OBBLIGATORIO (USA QUESTO ESATTO MODELLO):**
+                **Frase Originale** (${sourceLang}): "${phrase}"
+                **Traduzione** (${targetLang}): "[Frase tradotta]"
+                **Guida alla Pronuncia** (${targetLang}):
+                *Trascrizione Fonetica Semplificata:* [Trascrizione fonetica semplificata e intuitiva. Esempio per l'Ebraico: Sha-LOM, Ma Nish-MA. NON usare caratteri speciali come \` o \*\* qui.]
+                **Traduzioni Equivalenti:** [Fornisci un elenco di traduzioni alternative separate da punto e virgola. Per OGNI traduzione, includi OBBLIGATORIAMENTE la pronuncia semplificata tra parentesi. Formato: Traduzione 1 (Pronuncia 1); Traduzione 2 (Pronuncia 2). Se non ci sono equivalenti, ometti completamente questa riga.]
+
+                Sii conciso e attieniti strettamente al formato. Non aggiungere introduzioni, conclusioni o note extra.
+            `;
+            callLlm(llmPrompt, 'translate');
+        });
+
+        submitExplainBtn.addEventListener('click', () => {
+            const specificRequest = specificRequestInput.value;
+            const sourceLang = explainSourceLangSelect.value;
+            const targetLang = explainTargetLangSelect.value;
+
+            if (!specificRequest.trim()) {
+                displayError('Per favore, specifica l\'argomento della spiegazione.');
+                return;
+            }
+
+            const llmPrompt = `
+                Sei un "Tutor Poliglotta Esperto". La tua specializzazione copre Italiano, Inglese, Francese, Spagnolo, Tedesco e Ebraico.
+                Fornisci una spiegazione chiara e adatta a un principiante per l'argomento richiesto, usando esempi pratici.
+
+                **Argomento:** "${specificRequest}"
+                **Lingua di Destinazione (per la spiegazione):** "${targetLang}"
+                **Lingua di Partenza (per le traduzioni degli esempi):** "${sourceLang}"
+
+                **FORMATO DI OUTPUT OBBLIGATORIO:**
+                **Argomento Richiesto:** ${specificRequest} in ${targetLang}
+                **Spiegazione:**
+                [Descrizione chiara e semplice del concetto. Usa paragrafi brevi o elenchi puntati.]
+                **Esempi Pratici:**
+                - \`"[Esempio 1 in lingua di destinazione]"\` (Traduzione: "[Traduzione in lingua di partenza]")
+                - \`"[Esempio 2 in lingua di destinazione]"\` (Traduzione: "[Traduzione in lingua di partenza]")
+                - \`"[Esempio 3 in lingua di destinazione]"\` (Traduzione: "[Traduzione in lingua di partenza]")
+
+                Attieniti strettamente a questo formato.
+            `;
+            callLlm(llmPrompt, 'explain');
+        });
+    </script>
+</body>
+</html>
