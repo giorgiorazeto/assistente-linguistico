@@ -4,373 +4,194 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assistente Linguistico</title>
-    <!-- Caricamento di Tailwind CSS dal CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Caricamento del font Inter da Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Stile per un aspetto più pulito quando il contenuto è dinamico */
-        .prose {
-            color: #374151; /* gray-700 */
-        }
-        .prose strong {
-            font-weight: 600; /* semibold */
-        }
-        .prose code {
-            background-color: #e5e7eb; /* gray-200 */
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-size: 0.9em;
-        }
-        .prose ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-        }
-        .prose li {
-            margin-bottom: 0.5rem;
-        }
-    </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 text-gray-800 flex flex-col items-center">
+<body class="bg-gray-100 flex items-center justify-center h-screen">
 
-    <div class="w-full max-w-3xl">
-        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-blue-200">
-            <h1 class="text-3xl sm:text-4xl font-bold text-center text-blue-700 mb-4">
-                <span class="text-indigo-600">Assistente</span> Linguistico
-            </h1>
-            <p class="text-center text-gray-600 mb-8">
-                Il tuo Tutor Poliglotta per affiancare Duolingo!
-            </p>
+    <div class="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
+        
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Assistente Linguistico</h1>
+            <p class="text-gray-500">Il tuo Tutor Poliglotta per affiancare Duolingo!</p>
+        </div>
 
-            <!-- Selettore del tipo di richiesta -->
-            <div class="flex justify-center mb-6 space-x-2 sm:space-x-4">
-                <button id="translateBtn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 bg-indigo-500 text-white shadow-md">
-                    Traduzione & Pronuncia
-                </button>
-                <button id="explainBtn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 bg-gray-200 text-gray-700 hover:bg-gray-300">
-                    Chiedi al Tutor
-                </button>
+        <div class="flex justify-center border-b mb-6">
+            <button id="translateBtn" class="py-2 px-6 bg-blue-500 text-white rounded-t-lg focus:outline-none">Traduzione & Pronuncia</button>
+            <button id="explainBtn" class="py-2 px-6 text-gray-600 rounded-t-lg focus:outline-none">Chiedi al Tutor</button>
+        </div>
+
+        <div id="translateSection">
+            <div class="mb-4">
+                <label for="phraseInput" class="block text-sm font-medium text-gray-700 mb-1">Inserisci la frase:</label>
+                <input type="text" id="phraseInput" placeholder="Esempio: Ciao, come stai?" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
 
-            <!-- Sezione Traduzione -->
-            <div id="translateSection" class="space-y-6">
+            <div class="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                    <label for="phraseInput" class="block text-lg font-medium text-gray-700 mb-2">
-                        Inserisci la frase:
-                    </label>
-                    <input
-                        type="text"
-                        id="phraseInput"
-                        placeholder="Esempio: Ciao, come stai?"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
-                    />
+                    <label for="sourceLangSelect" class="block text-sm font-medium text-gray-700">Lingua di Partenza:</label>
+                    <select id="sourceLangSelect" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option>Italiano</option>
+                        <option>Inglese</option>
+                        <option>Spagnolo</option>
+                        <option>Francese</option>
+                        <option>Tedesco</option>
+                        <option>Ebraico</option>
+                    </select>
                 </div>
-
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="sourceLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
-                            Lingua di Partenza:
-                        </label>
-                        <select
-                            id="sourceLangSelect"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
-                        >
-                            <option value="Italiano">Italiano</option>
-                            <option value="Inglese">Inglese</option>
-                            <option value="Francese">Francese</option>
-                            <option value="Spagnolo">Spagnolo</option>
-                            <option value="Tedesco">Tedesco</option>
-                            <option value="Ebraico">Ebraico</option>
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <label for="targetLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
-                            Lingua di Destinazione:
-                        </label>
-                        <select
-                            id="targetLangSelect"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
-                        >
-                            <option value="Inglese">Inglese</option>
-                            <option value="Francese">Francese</option>
-                            <option value="Spagnolo">Spagnolo</option>
-                            <option value="Tedesco">Tedesco</option>
-                            <option value="Ebraico">Ebraico</option>
-                            <option value="Italiano">Italiano</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button id="submitTranslateBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-                    Traduci e Pronuncia
-                </button>
-            </div>
-
-            <!-- Sezione Spiegazione -->
-            <div id="explainSection" class="space-y-6 hidden">
                 <div>
-                    <label for="specificRequestInput" class="block text-lg font-medium text-gray-700 mb-2">
-                        Argomento (es. "Usi del congiuntivo"):
-                    </label>
-                    <input
-                        type="text"
-                        id="specificRequestInput"
-                        placeholder="Esempio: Usi del 'futuro semplice' in inglese"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
-                    />
+                    <label for="targetLangSelect" class="block text-sm font-medium text-gray-700">Lingua di Destinazione:</label>
+                    <select id="targetLangSelect" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option>Inglese</option>
+                        <option>Italiano</option>
+                        <option>Spagnolo</option>
+                        <option>Francese</option>
+                        <option>Tedesco</option>
+                        <option>Ebraico</option>
+                    </select>
                 </div>
-
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="explainSourceLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
-                            La tua Lingua:
-                        </label>
-                        <select
-                            id="explainSourceLangSelect"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
-                        >
-                            <option value="Italiano">Italiano</option>
-                            <option value="Inglese">Inglese</option>
-                            <option value="Francese">Francese</option>
-                            <option value="Spagnolo">Spagnolo</option>
-                            <option value="Tedesco">Tedesco</option>
-                            <option value="Ebraico">Ebraico</option>
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <label for="explainTargetLangSelect" class="block text-lg font-medium text-gray-700 mb-2">
-                            Lingua dell'Argomento:
-                        </label>
-                        <select
-                            id="explainTargetLangSelect"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200"
-                        >
-                            <option value="Inglese">Inglese</option>
-                            <option value="Francese">Francese</option>
-                            <option value="Spagnolo">Spagnolo</option>
-                            <option value="Tedesco">Tedesco</option>
-                            <option value="Ebraico">Ebraico</option>
-                            <option value="Italiano">Italiano</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button id="submitExplainBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-                    Ottieni Spiegazione
-                </button>
             </div>
+
+            <button id="submitTranslateBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center">
+                Traduci e Pronuncia
+            </button>
         </div>
 
-        <!-- Area di Errore e Risposta -->
-        <div id="errorDisplay" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative w-full mt-6 hidden" role="alert">
-            <strong class="font-bold">Errore!</strong>
-            <span id="errorMessage" class="block sm:inline ml-2"></span>
+        <div id="explainSection" class="hidden">
+             <p>Funzionalità "Chiedi al Tutor" in costruzione.</p>
         </div>
 
-        <div id="responseArea" class="bg-white p-6 rounded-xl shadow-lg w-full mt-6 border border-green-200 hidden">
-            <h2 class="text-2xl font-semibold text-green-700 mb-4">La tua risposta:</h2>
-            <div id="llmResponseContent" class="prose max-w-none"></div>
-            <div id="ttsErrorDisplay" class="mt-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative hidden" role="alert">
-                <strong class="font-bold">Attenzione:</strong>
-                <span id="ttsErrorMessage" class="block sm:inline ml-2"></span>
-            </div>
+        <div id="responseArea" class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200 hidden">
+            <h3 class="font-bold text-lg mb-2">Risposta dell'Assistente:</h3>
+            <p id="llmResponseContent" class="text-gray-800 whitespace-pre-wrap"></p>
         </div>
+        
+        <div id="loading" class="mt-6 text-center hidden">
+            <p>Sto pensando...</p>
+        </div>
+        
+        <div id="errorDisplay" class="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md hidden">
+            <p id="errorMessage"></p>
+        </div>
+
     </div>
 
-    <script>
-        // --- ELEMENTI DEL DOM ---
-        const translateBtn = document.getElementById('translateBtn');
-        const explainBtn = document.getElementById('explainBtn');
-        const translateSection = document.getElementById('translateSection');
-        const explainSection = document.getElementById('explainSection');
-        const phraseInput = document.getElementById('phraseInput');
-        const sourceLangSelect = document.getElementById('sourceLangSelect');
-        const targetLangSelect = document.getElementById('targetLangSelect');
-        const submitTranslateBtn = document.getElementById('submitTranslateBtn');
-        const specificRequestInput = document.getElementById('specificRequestInput');
-        const explainSourceLangSelect = document.getElementById('explainSourceLangSelect');
-        const explainTargetLangSelect = document.getElementById('explainTargetLangSelect');
-        const submitExplainBtn = document.getElementById('submitExplainBtn');
-        const errorDisplay = document.getElementById('errorDisplay');
-        const errorMessage = document.getElementById('errorMessage');
-        const responseArea = document.getElementById('responseArea');
-        const llmResponseContent = document.getElementById('llmResponseContent');
-        const ttsErrorDisplay = document.getElementById('ttsErrorDisplay');
-        const ttsErrorMessageSpan = document.getElementById('ttsErrorMessage');
-
-        let availableVoices = [];
-  // --- FUNZIONI DI UTILITÀ ---
-
-        // Funzione per mostrare e nascondere il caricamento sui bottoni
-        function setLoadingState(isLoading) {
-            const loadingSpinner = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-            
-            submitTranslateBtn.disabled = isLoading;
-            submitExplainBtn.disabled = isLoading;
-
-            if (isLoading) {
-                submitTranslateBtn.innerHTML = `${loadingSpinner} Traduco...`;
-                submitExplainBtn.innerHTML = `${loadingSpinner} Spiego...`;
-            } else {
-                submitTranslateBtn.innerHTML = 'Traduci e Pronuncia';
-                submitExplainBtn.innerHTML = 'Ottieni Spiegazione';
-            }
-        }
-        
-        // Funzione per interpretare una versione semplificata di Markdown in HTML
-        function parseMarkdown(markdown) {
-            let html = markdown
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')       
-                .replace(/`(.*?)`/g, '<code>$1</code>')     
-                .replace(/^- (.*)/gm, '<li>$1</li>')         
-                .replace(/(\n|^)(<li>.*<\/li>(\n|$))+/gs, '<ul>$&</ul>') 
-                .replace(/<\/li>\n<li>/g, '</li><li>')
-                .replace(/<ul>\n/g, '<ul>').replace(/\n<\/ul>/g, '</ul>')
-                .replace(/\n/g, '<br/>'); 
-            return html;
-        }
-
-        // Funzioni per gestire la visualizzazione degli errori
-        function displayError(msg) {
-            errorMessage.textContent = msg;
-            errorDisplay.classList.remove('hidden');
-            responseArea.classList.add('hidden');
-        }
-
-        function hideError() {
-            errorDisplay.classList.add('hidden');
-        }
-
-        function displayTtsError(msg) {
-            ttsErrorMessageSpan.textContent = msg;
-            ttsErrorDisplay.classList.remove('hidden');
-        }
-
-        function hideTtsError() {
-            ttsErrorDisplay.classList.add('hidden');
-        }
-
-        // --- FUNZIONALITÀ TEXT-TO-SPEECH (TTS) ---
-
-        // Carica le voci disponibili per la sintesi vocale
-        function loadVoices() {
-            availableVoices = window.speechSynthesis.getVoices();
-        }
-
-        if ('speechSynthesis' in window) {
-            loadVoices();
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = loadVoices;
-            }
-        } else {
-            console.warn('Sintesi vocale non supportata da questo browser.');
-        }
-
-        // Riproduce una frase usando la sintesi vocale
-        function speakPhrase(text, lang) {
-            hideTtsError();
-            if (!('speechSynthesis'in window) || availableVoices.length === 0) {
-                displayTtsError('La sintesi vocale non è disponibile o configurata nel tuo browser.');
-                return;
-            }
-            if (!text || text.trim() === '') return;
-
-            window.speechSynthesis.cancel(); // Interrompe eventuali riproduzioni in corso
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            const langMap = {
-                'Inglese': 'en-US', 'Francese': 'fr-FR', 'Spagnolo': 'es-ES',
-                'Tedesco': 'de-DE', 'Ebraico': 'he-IL', 'Italiano': 'it-IT'
-            };
-            const langCode = langMap[lang] || 'en-US';
-            utterance.lang = langCode;
-
-            const voice = availableVoices.find(v => v.lang === langCode);
-            if (voice) {
-                utterance.voice = voice;
-            } else {
-                displayTtsError(`Nessuna voce trovata per ${lang}. Verrà usata la voce di default.`);
-            }
-
-            utterance.onerror = (event) => displayTtsError(`Errore TTS: ${event.error}`);
-            window.speechSynthesis.speak(utterance);
-        }
-
-       // ========================================================================
-//  NUOVO CODICE JAVASCRIPT COMPLETO E SICURO (Versione Definitiva)
+<script>
+// ========================================================================
+//  CODICE FINALE, UNICO E FUNZIONANTE
 // ========================================================================
 
+// --- ELEMENTI DEL DOM ---
+const translateBtn = document.getElementById('translateBtn');
+const explainBtn = document.getElementById('explainBtn');
+const translateSection = document.getElementById('translateSection');
+const explainSection = document.getElementById('explainSection');
+const phraseInput = document.getElementById('phraseInput');
+const sourceLangSelect = document.getElementById('sourceLangSelect');
+const targetLangSelect = document.getElementById('targetLangSelect');
+const submitTranslateBtn = document.getElementById('submitTranslateBtn');
+const responseArea = document.getElementById('responseArea');
+const llmResponseContent = document.getElementById('llmResponseContent');
+const errorDisplay = document.getElementById('errorDisplay');
+const errorMessage = document.getElementById('errorMessage');
+
+// --- GESTIONE INTERFACCIA ---
+function setLoadingState(isLoading, button) {
+    const originalText = button.dataset.originalText || button.innerHTML;
+    if (!button.dataset.originalText) {
+        button.dataset.originalText = originalText;
+    }
+
+    if (isLoading) {
+        button.disabled = true;
+        button.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Elaborazione...</span>`;
+    } else {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }
+}
+
+function displayError(msg) {
+    errorMessage.textContent = msg;
+    errorDisplay.classList.remove('hidden');
+    responseArea.classList.add('hidden');
+}
+
+function hideError() {
+    errorDisplay.classList.add('hidden');
+}
+
+// --- FUNZIONE SICURA PER CHIAMARE L'API TRAMITE NETLIFY ---
+async function interrogaAssistente(testoDomanda) {
+    try {
+        const response = await fetch('/.netlify/functions/chiamata-gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: testoDomanda })
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'La richiesta al server è fallita con stato ' + response.status }));
+            throw new Error(errorData.error || 'Errore generico del server.');
+        }
+        const data = await response.json();
+        return data.text;
+    } catch (error) {
+        console.error("Errore nella chiamata sicura:", error);
+        return `ERRORE: Impossibile comunicare con l'assistente. Dettagli: ${error.message}`;
+    }
+}
+
+// --- FUNZIONE PRINCIPALE CHE PARTE AL CLICK ---
+async function eseguiTraduzione() {
+    hideError();
+    const fraseDaTradurre = phraseInput.value;
+    const linguaPartenza = sourceLangSelect.value;
+    const linguaDestinazione = targetLangSelect.value;
+
+    if (!fraseDaTradurre) {
+        displayError("Per favore, inserisci una frase da tradurre.");
+        return;
+    }
+
+    setLoadingState(true, submitTranslateBtn);
+    responseArea.classList.add('hidden');
+
+    const promptCompleto = `Traduci questa frase: "${fraseDaTradurre}" da ${linguaPartenza} a ${linguaDestinazione}. Fornisci solo ed esclusivamente la traduzione diretta del testo, senza aggiungere commenti, spiegazioni o frasi introduttive come "Ecco la traduzione:".`;
+    
+    const risposta = await interrogaAssistente(promptCompleto);
+
+    setLoadingState(false, submitTranslateBtn);
+
+    if (risposta.startsWith("ERRORE:")) {
+        displayError(risposta);
+    } else {
+        llmResponseContent.innerText = risposta;
+        responseArea.classList.remove('hidden');
+    }
+}
+
+// --- COLLEGAMENTO DEGLI EVENTI ---
 document.addEventListener('DOMContentLoaded', () => {
-    // --- COLLEGAMENTO AGLI ELEMENTI HTML ---
-    // Questi devono corrispondere agli 'id' nel suo file HTML
-    const promptInput = document.getElementById('prompt-input');
-    const submitButton = document.getElementById('submit-button');
-    const responseArea = document.getElementById('response-area');
-    const loadingIndicator = document.getElementById('loading');
-    const errorDisplay = document.getElementById('error-message');
+    submitTranslateBtn.addEventListener('click', eseguiTraduzione);
 
-    // --- FUNZIONE SICURA PER CHIAMARE L'API TRAMITE NETLIFY ---
-    async function interrogaAssistente(testoDomanda) {
-        try {
-            const response = await fetch('/.netlify/functions/chiamata-gemini', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: testoDomanda })
-            });
-            if (!response.ok) {
-                throw new Error('La richiesta al server è fallita.');
-            }
-            const data = await response.json();
-            return data.text;
-        } catch (error) {
-            console.error("Errore nella chiamata sicura:", error);
-            return "ERRORE: Impossibile comunicare con l'assistente. Riprova.";
-        }
-    }
+    translateBtn.addEventListener('click', () => {
+        translateSection.classList.remove('hidden');
+        explainSection.classList.add('hidden');
+        translateBtn.classList.add('bg-blue-500', 'text-white');
+        translateBtn.classList.remove('text-gray-600');
+        explainBtn.classList.add('text-gray-600');
+        explainBtn.classList.remove('bg-blue-500', 'text-white');
+    });
 
-    // --- FUNZIONE PRINCIPALE CHE GESTISCE L'INVIO ---
-    async function eseguiDomanda() {
-        const domandaUtente = promptInput.value;
-
-        if (!domandaUtente) {
-            errorDisplay.innerText = "Per favore, inserisci una domanda.";
-            errorDisplay.style.display = 'block';
-            return;
-        }
-
-        // 1. Prepara l'interfaccia per l'attesa
-        errorDisplay.style.display = 'none';
-        submitButton.disabled = true;
-        loadingIndicator.style.display = 'block';
-        responseArea.style.display = 'none';
-
-        // 2. Chiama la nostra funzione sicura e aspetta la risposta
-        const risposta = await interrogaAssistente(domandaUtente);
-
-        // 3. Mostra la risposta e ripristina l'interfaccia
-        loadingIndicator.style.display = 'none';
-        submitButton.disabled = false;
-
-        if (risposta.startsWith("ERRORE:")) {
-            errorDisplay.innerText = risposta;
-            errorDisplay.style.display = 'block';
-        } else {
-            responseArea.innerText = risposta;
-            responseArea.style.display = 'block';
-        }
-    }
-
-    // --- COLLEGAMENTO DELLA FUNZIONE AL PULSANTE E AL TASTO INVIO ---
-    submitButton.addEventListener('click', eseguiDomanda);
-    promptInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            eseguiDomanda();
-        }
+    explainBtn.addEventListener('click', () => {
+        explainSection.classList.remove('hidden');
+        translateSection.classList.add('hidden');
+        explainBtn.classList.add('bg-blue-500', 'text-white');
+        explainBtn.classList.remove('text-gray-600');
+        translateBtn.classList.add('text-gray-600');
+        translateBtn.classList.remove('bg-blue-500', 'text-white');
     });
 });
+</script>
+
 </body>
 </html>
